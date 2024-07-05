@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 datasource db {
   provider = "postgresql"
   url      = env("POSTGRES_PRISMA_URL")
@@ -13,22 +7,63 @@ generator client {
   provider = "prisma-client-js"
 }
 
-model User {
-  id        Int      @id @default(autoincrement())
-  username  String   @unique
+model Admin {
+  id        Int       @id @default(autoincrement())
+  username  String    @unique
+  email     String    @unique
   password  String
-  email     String   @unique
-  createdAt DateTime @default(now())
-  posts     Post[]
+  createdAt DateTime  @default(now())
+  jams      OfficialJam[]
 }
 
-model Post {
-  id        Int      @id @default(autoincrement())
-  userId    Int
+model Normie {
+  id        Int       @id @default(autoincrement())
+  username  String    @unique
+  email     String    @unique
+  password  String
+  createdAt DateTime  @default(now())
+  authoredJams UnofficialJam[] @relation("AuthoredUnofficialJams")
+  participatedOfficialJams OfficialJam[] @relation("ParticipatedOfficialJams")
+  participatedUnofficialJams UnofficialJam[] @relation("ParticipatedUnofficialJams")
+  bundles   Bundle[]
+}
+
+model Judge {
+  id        Int       @id @default(autoincrement())
+  username  String    @unique
+  email     String    @unique
+  password  String
+  createdAt DateTime  @default(now())
+  judgedJams UnofficialJam[]
+}
+
+model OfficialJam {
+  id        Int       @id @default(autoincrement())
   title     String
-  body      String
-  createdAt DateTime @default(now())
-
-  user User @relation(fields: [userId], references: [id])
+  createdAt DateTime  @default(now())
+  authorId  Int
+  author    Admin     @relation(fields: [authorId], references: [id])
+  users     Normie[]  @relation("ParticipatedOfficialJams")
+  bundles   Bundle[]  @relation("OfficialJamBundles")
 }
 
+model UnofficialJam {
+  id        Int       @id @default(autoincrement())
+  title     String
+  createdAt DateTime  @default(now())
+  authorId  Int
+  author    Normie    @relation("AuthoredUnofficialJams", fields: [authorId], references: [id])
+  judgeId   Int?
+  judge     Judge?    @relation(fields: [judgeId], references: [id])
+  users     Normie[]  @relation("ParticipatedUnofficialJams")
+  bundles   Bundle[]  @relation("UnofficialJamBundles")
+}
+
+model Bundle {
+  id        Int       @id @default(autoincrement())
+  name      String
+  createdAt DateTime  @default(now())
+  users     Normie[]
+  officialJams OfficialJam[] @relation("OfficialJamBundles")
+  unofficialJams UnofficialJam[] @relation("UnofficialJamBundles")
+}
