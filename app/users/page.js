@@ -1,4 +1,4 @@
-import prisma from '../../lib/prisma';
+const prisma = require('../../lib/prisma');
 
 async function getUsers() {
   const users = await prisma.user.findMany();
@@ -18,4 +18,3 @@ export default async function UsersPage() {
     </div>
   );
 }
-

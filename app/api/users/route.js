@@ -1,21 +1,10 @@
-import prisma from '../../../lib/prisma';
-import { NextResponse } from 'next/server';
+const prisma = require('../../../lib/prisma');
 
-export async function GET() {
-  const users = await prisma.user.findMany();
-  return NextResponse.json(users);
+export async function GET(req) {
+  try {
+    const users = await prisma.user.findMany();
+    return new Response(JSON.stringify(users), { status: 200 });
+  } catch (error) {
+    return new Response(JSON.stringify({ error: 'Internal Server Error' }), { status: 500 });
+  }
 }
-
-export async function POST(request) {
-  const data = await request.json();
-  const newUser = await prisma.user.create({
-    data: {
-      username: data.username,
-      password: data.password,
-      email: data.email,
-    },
-  });
-  return NextResponse.json(newUser);
-}
-
-
